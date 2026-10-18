@@ -9,6 +9,8 @@ class Job {
   final JobStatus status;
   final DateTime createdAt;
   final String? notes;
+  final String serviceType;
+  final bool locationSharingEnabled;
 
   Job({
     required this.id,
@@ -19,6 +21,8 @@ class Job {
     required this.status,
     required this.createdAt,
     this.notes,
+    this.serviceType = 'Roadside assistance',
+    this.locationSharingEnabled = false,
   });
 
   factory Job.fromMap(String id, Map<String, dynamic> map) {
@@ -34,6 +38,8 @@ class Job {
       ),
       createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
       notes: map['notes'],
+      serviceType: map['serviceType'] as String? ?? 'Roadside assistance',
+      locationSharingEnabled: map['locationSharingEnabled'] == true,
     );
   }
 
@@ -45,5 +51,7 @@ class Job {
         'status': status.name,
         'createdAt': createdAt.toIso8601String(),
         'notes': notes,
+        'serviceType': serviceType,
+        'locationSharingEnabled': locationSharingEnabled,
       };
 }

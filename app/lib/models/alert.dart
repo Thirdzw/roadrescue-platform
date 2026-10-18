@@ -1,4 +1,4 @@
-enum AlertType { crash, panicButton, predictiveFault }
+enum AlertType { crash, panicButton }
 
 class EmergencyAlert {
   final String id;

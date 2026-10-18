@@ -24,6 +24,21 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>RoadRescue uses your location while the app is open to share your position and find nearby emergency help.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>RoadRescue uses the camera when you choose to photograph provider verification documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>RoadRescue accesses photos you choose to attach as provider verification documents.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>RoadRescue uses speech recognition for voice navigation while driving.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>RoadRescue uses the microphone only while you actively start a voice command.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

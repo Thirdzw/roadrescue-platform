@@ -4,26 +4,22 @@ class Vehicle {
   final String make;
   final String model;
   final String plateNumber;
-  final Map<String, dynamic> lastHealthReading; // engine, battery, tyre data
 
-  Vehicle({
+  const Vehicle({
     required this.id,
     required this.ownerId,
     required this.make,
     required this.model,
     required this.plateNumber,
-    this.lastHealthReading = const {},
   });
 
   factory Vehicle.fromMap(String id, Map<String, dynamic> map) {
     return Vehicle(
       id: id,
-      ownerId: map['ownerId'] ?? '',
-      make: map['make'] ?? '',
-      model: map['model'] ?? '',
-      plateNumber: map['plateNumber'] ?? '',
-      lastHealthReading:
-          Map<String, dynamic>.from(map['lastHealthReading'] ?? {}),
+      ownerId: map['ownerId'] as String? ?? '',
+      make: map['make'] as String? ?? '',
+      model: map['model'] as String? ?? '',
+      plateNumber: map['plateNumber'] as String? ?? '',
     );
   }
 
@@ -32,6 +28,5 @@ class Vehicle {
         'make': make,
         'model': model,
         'plateNumber': plateNumber,
-        'lastHealthReading': lastHealthReading,
       };
 }

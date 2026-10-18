@@ -1,0 +1,118 @@
+{
+  "version": "2026-10-06",
+  "verified": false,
+  "national": [
+    { "name": "All emergencies", "phones": ["999"], "primary": true },
+    { "name": "Police", "phones": ["995"] },
+    { "name": "Fire Department", "phones": ["993"] },
+    { "name": "Econet subscribers (toll free)", "phones": ["112"] },
+    { "name": "NetOne subscribers (toll free)", "phones": ["114"] },
+    { "name": "Toll-free landline", "phones": ["0800 3222 911"] }
+  ],
+  "roadAssistance": [
+    { "name": "Road rescue recovery, 24hr technical assistance", "phones": ["(263 773) 300 800", "133 000"] },
+    { "name": "Road assistance, 24hr service", "phones": ["(+263 242) 703 631"] },
+    { "name": "Road assistance / roadblocks", "phones": ["(+263 242) 708 176", "(+263 712) 769 768"] },
+    { "name": "Automobile Association", "phones": ["(+263 242) 776 760"] }
+  ],
+  "cities": [
+    {
+      "id": "harare", "name": "Harare", "lat": -17.8292, "lng": 31.0522,
+      "ambulance": [
+        { "name": "EMRAS Harare", "phones": ["0772 141 610", "04-797 479", "04-911"] },
+        { "name": "MARS Harare", "phones": ["(04) 705905", "706034", "771221", "0772235461", "0772792800", "0712600002"] }
+      ],
+      "fire": [ { "name": "Fire Department Harare", "phones": ["04 720206"] } ],
+      "police": [
+        { "name": "Police Station Central", "phones": ["(+263 4) 748 836", "77651"], "address": "Kenneth Kaunda Avenue, Central Harare" },
+        { "name": "Police Station Avondale", "phones": ["(+263 4) 336632"], "address": "King George Road, Avondale, Harare" },
+        { "name": "Police Station Borrowdale", "phones": ["(+263 4) 860067", "860061"], "address": "Borrowdale Road, Borrowdale, Harare" },
+        { "name": "Police Station Highlands", "phones": ["(+263 4) 495304", "495504"], "address": "Glen Roy Road, Highlands, Harare" },
+        { "name": "Police Station Mabelreign", "phones": ["(+263 4) 336000"], "address": "Sherwood Drive, Mabelreign, Harare" },
+        { "name": "Police Station Marlborough", "phones": ["(04) 301853"], "address": "Bannockburn Road, Marlborough, Harare" },
+        { "name": "Police Station Milton Park", "phones": ["(+263 4) 799298", "708113"], "address": "Lezard Avenue, Milton Park, Harare" },
+        { "name": "Police Station Monavale", "phones": ["(+263) 336613"] },
+        { "name": "Armed Robberies", "phones": ["772830979"], "note": "missing leading zero in source, verify" },
+        { "name": "CID Homicide", "phones": ["0773 025 695"] }
+      ],
+      "hospitals": [
+        { "name": "Trauma Centre & Hospital (24hr)", "phones": ["(0242) 700 667", "778 470 084"], "address": "15 Lanark Road, Belgravia, Harare" },
+        { "name": "Emergency Medical Centre, Corporate 24 (24hr)", "phones": ["(04) 700401"], "address": "6 Bath Road, Belgravia, Harare" },
+        { "name": "Belvedere Medical Centre (24hr)", "phones": ["740196", "740236"], "address": "189 Samora Machel Avenue, Harare" },
+        { "name": "RMC Rockfoundation Medical Centre (24hr)", "phones": ["(0242) 338 879", "0774812484"], "address": "92 Norfolk Road, Mount Pleasant, Harare" },
+        { "name": "Parirenyatwa Hospital", "phones": ["0242 708 864", "0242 708 865"], "address": "Mazowe Street, Harare", "note": "spelled Parirenyawata in source" },
+        { "name": "St Annes", "phones": ["339933", "339936"], "address": "155 King George Road, Avondale, Harare" },
+        { "name": "The Avenues Clinic", "phones": ["(0242) 251 180", "251191"], "address": "Mazoe Street, Harare" },
+        { "name": "Dandaro Clinic", "phones": ["+263 488 2350", "488 6138"], "address": "1 Wenham Close, Borrowdale, Harare" }
+      ]
+    },
+    {
+      "id": "bulawayo", "name": "Bulawayo", "lat": -20.1325, "lng": 28.6265,
+      "ambulance": [
+        { "name": "EMRAS Bulawayo", "phones": ["0772 141 611", "09-62611", "09-62155"] },
+        { "name": "MARS Bulawayo", "phones": ["(09) 64082", "62611"] }
+      ],
+      "police": [
+        { "name": "Bulawayo Police", "phones": ["(+263 9) 995"] },
+        { "name": "Police Special Tactic", "phones": ["(+263) 04 497906", "0772 461 395"], "note": "04 is a Harare area code, verify" }
+      ],
+      "hospitals": [
+        { "name": "Bulawayo Central Hospital", "phones": ["(+263 9) 252 111"] },
+        { "name": "Mater Dei Hospital", "phones": ["(+263 9) 240 000"] }
+      ]
+    },
+    {
+      "id": "gweru", "name": "Gweru", "lat": -19.45, "lng": 29.8167,
+      "ambulance": [
+        { "name": "EMRAS Gweru", "phones": ["0772 141 612", "054-221 214", "054-227256"] },
+        { "name": "MARS Gweru", "phones": ["(054) 223339"] }
+      ],
+      "hospitals": [ { "name": "Clay Bank Private Hospital", "phones": ["+263 54 223 330"], "address": "Clay Bank Rd, Windsor Park, Gweru" } ]
+    },
+    {
+      "id": "mutare", "name": "Mutare", "lat": -18.9707, "lng": 32.6709,
+      "ambulance": [
+        { "name": "EMRAS Mutare", "phones": ["0772 141 613", "020-62107"] },
+        { "name": "MARS Mutare", "phones": ["(020) 66466"] }
+      ]
+    },
+    {
+      "id": "kwekwe", "name": "Kwekwe", "lat": -18.9281, "lng": 29.8149,
+      "ambulance": [
+        { "name": "EMRAS Kwekwe", "phones": ["0772 141 614", "055-22664", "055-22778"] },
+        { "name": "MARS Kwekwe", "phones": ["(055) 21999"] }
+      ]
+    },
+    {
+      "id": "masvingo", "name": "Masvingo", "lat": -20.0744, "lng": 30.8328,
+      "ambulance": [
+        { "name": "EMRAS Masvingo", "phones": ["0772 141 615", "039-262463"] },
+        { "name": "MARS Masvingo", "phones": ["(039) 263222"] }
+      ]
+    },
+    {
+      "id": "bindura", "name": "Bindura", "lat": -17.3019, "lng": 31.3306,
+      "ambulance": [ { "name": "EMRAS Bindura", "phones": ["0772 190 381", "0271-6141", "0271-7239"] } ]
+    },
+    {
+      "id": "victoria_falls", "name": "Victoria Falls", "lat": -17.9243, "lng": 25.8572,
+      "ambulance": [
+        { "name": "EMRAS Victoria Falls", "phones": ["0732 146 256", "013-46052", "013-46053"] },
+        { "name": "MARS Victoria Falls", "phones": ["(013) 44646"] }
+      ],
+      "police": [
+        { "name": "Victoria Falls Police", "phones": ["(+263) 13 42206"] },
+        { "name": "Victoria Falls Bridge (Customs and Immigration)", "phones": ["(+263) 13 44238"] }
+      ],
+      "hospitals": [ { "name": "Victoria Falls Medical Center", "phones": ["(+263 13) 433 56"], "note": "looks too short, verify" } ]
+    },
+    {
+      "id": "kariba", "name": "Kariba", "lat": -16.5167, "lng": 28.8,
+      "ambulance": [ { "name": "MARS Kariba", "phones": ["(061) 3006"] } ]
+    },
+    {
+      "id": "marondera", "name": "Marondera", "lat": -18.1853, "lng": 31.5519,
+      "ambulance": [ { "name": "MARS Marondera", "phones": ["(0279) 24949"] } ]
+    }
+  ]
+}
