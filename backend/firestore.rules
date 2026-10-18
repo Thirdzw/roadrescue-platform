@@ -2,36 +2,327 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
 
-    // Users can read their own profile; mechanics' public info is readable
-    // by anyone signed in (needed for job matching).
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isVerifiedMechanic() {
+      let profilePath = /databases/$(database)/documents/users/$(request.auth.uid);
+      return signedIn()
+          && exists(profilePath)
+          && get(profilePath).data.role == 'mechanic'
+          && get(profilePath).data.verified == true;
+    }
+
+    function hasValidLocation(data) {
+      return data.latitude is number
+          && data.longitude is number
+          && data.latitude >= -90
+          && data.latitude <= 90
+          && data.longitude >= -180
+          && data.longitude <= 180;
+    }
+
+    function ownsVehicle(vehicleId, userId) {
+      let vehiclePath = /databases/$(database)/documents/vehicles/$(vehicleId);
+      return exists(vehiclePath)
+          && get(vehiclePath).data.ownerId == userId;
+    }
+
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if (signedIn() && request.auth.uid == userId) || isAdmin();
+      allow create: if signedIn()
+          && request.auth.uid == userId
+          && request.resource.data.keys().hasAll([
+            'name', 'phone', 'nationalId', 'role', 'verified', 'rating',
+            'termsAcceptedAt', 'termsVersion', 'updatedAt'
+          ])
+          && request.resource.data.role == 'motorist'
+          && request.resource.data.verified == false
+          && request.resource.data.rating == null
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 100
+          && request.resource.data.phone is string
+          && request.resource.data.phone.size() <= 32
+          && request.resource.data.nationalId is string
+          && request.resource.data.nationalId.size() >= 4
+          && request.resource.data.nationalId.size() <= 32
+          && request.resource.data.termsAcceptedAt is timestamp
+          && request.resource.data.termsVersion is string
+          && request.resource.data.termsVersion.size() <= 64
+          && request.resource.data.keys().hasOnly([
+            'name', 'phone', 'nationalId', 'role', 'verified', 'rating',
+            'bloodType', 'healthDataConsentAt', 'healthDataConsentVersion',
+            'termsAcceptedAt', 'termsVersion', 'fcmToken', 'updatedAt'
+          ])
+          && (!('bloodType' in request.resource.data)
+              || (request.resource.data.bloodType in [
+                    'Unknown', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+                  ]
+                  && request.resource.data.healthDataConsentAt is timestamp
+                  && request.resource.data.healthDataConsentVersion == 'v1'))
+          && (!('fcmToken' in request.resource.data)
+              || (request.resource.data.fcmToken is string
+                  && request.resource.data.fcmToken.size() <= 4096))
+          && (!('updatedAt' in request.resource.data)
+              || request.resource.data.updatedAt is timestamp);
+      allow update: if isAdmin()
+          || (signedIn()
+              && request.auth.uid == userId
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'name', 'phone', 'nationalId', 'bloodType',
+                'healthDataConsentAt', 'healthDataConsentVersion',
+                'termsAcceptedAt', 'termsVersion', 'fcmToken', 'updatedAt'
+              ])
+              && request.resource.data.name is string
+              && request.resource.data.name.size() > 0
+              && request.resource.data.name.size() <= 100
+              && request.resource.data.phone is string
+              && request.resource.data.phone.size() <= 32
+              && request.resource.data.nationalId is string
+              && request.resource.data.nationalId.size() >= 4
+              && request.resource.data.nationalId.size() <= 32
+              && request.resource.data.termsAcceptedAt is timestamp
+              && request.resource.data.termsVersion is string
+              && request.resource.data.termsVersion.size() <= 64
+              && (!('bloodType' in request.resource.data)
+                  || (request.resource.data.bloodType in [
+                        'Unknown', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+                      ]
+                      && request.resource.data.healthDataConsentAt is timestamp
+                      && request.resource.data.healthDataConsentVersion == 'v1'))
+              && (!('fcmToken' in request.resource.data)
+                  || (request.resource.data.fcmToken is string
+                      && request.resource.data.fcmToken.size() <= 4096))
+              && (!('updatedAt' in request.resource.data)
+                  || request.resource.data.updatedAt is timestamp));
+      allow delete: if isAdmin();
+
+      match /emergencyContacts/{contactId} {
+        allow read, delete: if signedIn() && request.auth.uid == userId;
+        allow create: if signedIn()
+            && request.auth.uid == userId
+            && request.resource.data.keys().hasOnly([
+              'name', 'relationship', 'phone', 'type', 'userId', 'createdAt'
+            ])
+            && request.resource.data.name is string
+            && request.resource.data.name.size() > 0
+            && request.resource.data.name.size() <= 100
+            && request.resource.data.relationship is string
+            && request.resource.data.relationship.size() <= 64
+            && request.resource.data.phone is string
+            && request.resource.data.phone.size() >= 7
+            && request.resource.data.phone.size() <= 32
+            && request.resource.data.type in ['circleMember', 'emergencyContact']
+            && (!('userId' in request.resource.data)
+                || (request.resource.data.userId is string
+                    && request.resource.data.userId.size() > 0
+                    && request.resource.data.userId.size() <= 128))
+            && request.resource.data.createdAt is timestamp;
+        allow update: if false;
+      }
     }
 
-    // Jobs: motorist who created it and the assigned mechanic can read/write.
-    // Any signed-in mechanic can read open ("requested") jobs to accept one.
     match /jobs/{jobId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-                    && request.resource.data.motoristId == request.auth.uid;
-      allow update: if request.auth != null;
+      allow read: if (signedIn()
+          && (resource.data.motoristId == request.auth.uid
+              || (resource.data.mechanicId == request.auth.uid
+                  && isVerifiedMechanic())
+              || (isVerifiedMechanic()
+                  && resource.data.status == 'requested'
+                  && resource.data.locationSharingEnabled == true)))
+          || isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.motoristId == request.auth.uid
+          && request.resource.data.mechanicId == null
+          && request.resource.data.status == 'requested'
+          && request.resource.data.locationSharingEnabled == true
+          && request.resource.data.serviceType is string
+          && request.resource.data.serviceType.size() > 0
+          && request.resource.data.serviceType.size() <= 80
+          && hasValidLocation(request.resource.data)
+          && request.resource.data.createdAt is string
+          && request.resource.data.createdAt.size() <= 64
+          && (!('notes' in request.resource.data)
+              || request.resource.data.notes == null
+              || (request.resource.data.notes is string
+                  && request.resource.data.notes.size() <= 500))
+          && request.resource.data.keys().hasAll([
+            'motoristId', 'mechanicId', 'latitude', 'longitude', 'status',
+            'createdAt', 'serviceType', 'locationSharingEnabled'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'motoristId', 'mechanicId', 'latitude', 'longitude', 'status',
+            'createdAt', 'notes', 'serviceType', 'locationSharingEnabled'
+          ]);
+      allow update: if isAdmin()
+          || (signedIn()
+              && resource.data.motoristId == request.auth.uid
+              && resource.data.status in ['requested', 'matched', 'enRoute']
+              && request.resource.data.status == 'cancelled'
+              && request.resource.data.locationSharingEnabled == false
+              && !('latitude' in request.resource.data)
+              && !('longitude' in request.resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'status', 'locationSharingEnabled', 'latitude', 'longitude'
+              ]))
+          || (signedIn()
+              && resource.data.motoristId == request.auth.uid
+              && resource.data.status in ['requested', 'matched', 'enRoute']
+              && request.resource.data.status == resource.data.status
+              && request.resource.data.locationSharingEnabled is bool
+              && (request.resource.data.locationSharingEnabled
+                  || (!('latitude' in request.resource.data)
+                      && !('longitude' in request.resource.data)))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'locationSharingEnabled', 'latitude', 'longitude'
+              ]))
+          || (signedIn()
+              && resource.data.motoristId == request.auth.uid
+              && resource.data.status in ['requested', 'matched', 'enRoute']
+              && resource.data.locationSharingEnabled == true
+              && !('latitude' in request.resource.data)
+              && !('longitude' in request.resource.data)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'latitude', 'longitude'
+              ]))
+          || (isVerifiedMechanic()
+              && resource.data.status == 'requested'
+              && resource.data.locationSharingEnabled == true
+              && request.resource.data.status == 'matched'
+              && request.resource.data.mechanicId == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'status', 'mechanicId'
+              ]))
+          || (signedIn()
+              && isVerifiedMechanic()
+              && resource.data.mechanicId == request.auth.uid
+              && ((resource.data.status == 'matched'
+                      && request.resource.data.status == 'enRoute')
+                  || (resource.data.status == 'enRoute'
+                      && request.resource.data.status == 'completed'
+                      && request.resource.data.locationSharingEnabled == false
+                      && !('latitude' in request.resource.data)
+                      && !('longitude' in request.resource.data)))
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                'status', 'locationSharingEnabled', 'latitude', 'longitude'
+              ]));
+      allow delete: if isAdmin();
+
+      match /liveLocation/{locationId} {
+        function parentJob() {
+          return get(/databases/$(database)/documents/jobs/$(jobId)).data;
+        }
+
+        function activeWithSharing() {
+          return parentJob().locationSharingEnabled == true
+              && parentJob().status in ['requested', 'matched', 'enRoute'];
+        }
+
+        allow read: if signedIn()
+            && locationId == 'current'
+            && activeWithSharing()
+            && (parentJob().motoristId == request.auth.uid
+                || (parentJob().mechanicId == request.auth.uid
+                    && isVerifiedMechanic()));
+        allow create, update: if signedIn()
+            && request.auth.uid == parentJob().motoristId
+            && activeWithSharing()
+            && locationId == 'current'
+            && hasValidLocation(request.resource.data)
+            && request.resource.data.accuracy is number
+            && request.resource.data.accuracy >= 0
+            && request.resource.data.accuracy <= 100
+            && request.resource.data.updatedAt is timestamp
+            && request.resource.data.keys().hasOnly([
+              'latitude', 'longitude', 'accuracy', 'updatedAt'
+            ]);
+        allow delete: if signedIn()
+            && (request.auth.uid == parentJob().motoristId
+                || (isVerifiedMechanic()
+                    && request.auth.uid == parentJob().mechanicId
+                    && parentJob().status in ['completed', 'cancelled']));
+      }
     }
 
-    // Vehicles: only the owner can read/write their vehicle's data.
     match /vehicles/{vehicleId} {
-      allow read, write: if request.auth != null
-                          && resource.data.ownerId == request.auth.uid;
+      allow read: if (signedIn()
+        && (vehicleId == request.auth.uid
+          || resource.data.ownerId == request.auth.uid))
+        || isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.ownerId == request.auth.uid
+          && request.resource.data.keys().hasOnly([
+            'ownerId', 'make', 'model', 'plateNumber', 'createdAt'
+          ]);
+      allow update: if signedIn()
+          && resource.data.ownerId == request.auth.uid
+          && request.resource.data.ownerId == resource.data.ownerId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'make', 'model', 'plateNumber', 'updatedAt'
+          ])
+          && request.resource.data.make is string
+          && request.resource.data.make.size() <= 80
+          && request.resource.data.model is string
+          && request.resource.data.model.size() <= 80
+          && request.resource.data.plateNumber is string
+          && request.resource.data.plateNumber.size() <= 32
+          && (!('updatedAt' in request.resource.data)
+              || request.resource.data.updatedAt is timestamp);
+      allow delete: if isAdmin();
     }
 
-    // Alerts: motorist can create; readable by signed-in users
-    // (the mock dispatch screen needs to see incoming alerts).
     match /alerts/{alertId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null
-                    && request.resource.data.motoristId == request.auth.uid;
-      allow update: if request.auth != null;
+      allow read: if (signedIn() && resource.data.motoristId == request.auth.uid) || isAdmin();
+      allow create: if signedIn()
+          && request.resource.data.motoristId == request.auth.uid
+          && request.resource.data.vehicleId is string
+          && ownsVehicle(request.resource.data.vehicleId, request.auth.uid)
+          && request.resource.data.type in ['crash', 'panicButton']
+          && request.resource.data.dispatched == false
+          && hasValidLocation(request.resource.data)
+          && request.resource.data.timestamp is string
+          && request.resource.data.timestamp.size() <= 64
+          && (!('recipientUserIds' in request.resource.data)
+              || (request.resource.data.recipientUserIds is list
+                  && request.resource.data.recipientUserIds.size() <= 100))
+          && (!('message' in request.resource.data)
+              || (request.resource.data.message is string
+                  && request.resource.data.message.size() <= 500))
+          && (!('test' in request.resource.data)
+              || request.resource.data.test is bool)
+          && (!('crashEvidence' in request.resource.data)
+              || (request.resource.data.crashEvidence is map
+                  && request.resource.data.crashEvidence.keys().hasOnly([
+                    'impactSpike', 'speedCollapse', 'stillness',
+                    'gyroscopeSpike', 'barometerChange', 'loudSound', 'total'
+                  ])
+                  && request.resource.data.crashEvidence.keys().hasAll([
+                    'impactSpike', 'speedCollapse', 'stillness',
+                    'gyroscopeSpike', 'barometerChange', 'loudSound', 'total'
+                  ])
+                  && request.resource.data.crashEvidence.impactSpike is bool
+                  && request.resource.data.crashEvidence.speedCollapse is bool
+                  && request.resource.data.crashEvidence.stillness is bool
+                  && request.resource.data.crashEvidence.gyroscopeSpike is bool
+                  && request.resource.data.crashEvidence.barometerChange is bool
+                  && request.resource.data.crashEvidence.loudSound is bool
+                  && request.resource.data.crashEvidence.total is int
+                  && request.resource.data.crashEvidence.total >= 5
+                  && request.resource.data.crashEvidence.total <= 9))
+          && request.resource.data.keys().hasAll([
+            'motoristId', 'vehicleId', 'type', 'latitude', 'longitude', 'timestamp', 'dispatched'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'motoristId', 'vehicleId', 'type', 'latitude', 'longitude', 'timestamp',
+            'dispatched', 'recipientUserIds', 'message', 'crashEvidence', 'test'
+          ]);
+      allow update, delete: if isAdmin();
     }
   }
 }

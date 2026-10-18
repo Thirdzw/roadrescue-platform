@@ -18,7 +18,7 @@ Keep them short and in the present tense:
 
 ```
 Add SOS button to home screen
-Fix crash when OBD-II dongle disconnects
+Fix phone-sensor crash detection
 Update Chapter 4 architecture diagram
 ```
 

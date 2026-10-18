@@ -1,2 +1,4 @@
-# roadrescue-platform
-motorist rescue + predictive maintenance + emergency response
+# RoadRescue
+
+Motorist rescue, phone-sensor crash detection, maintenance reminders, and
+emergency response.

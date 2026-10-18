@@ -1,10 +1,22 @@
 {
   "firestore": {
+    "database": "(default)",
+    "location": "africa-south1",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20"
-  }
+  "functions": [
+    {
+      "codebase": "default",
+      "source": "functions",
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
 }
